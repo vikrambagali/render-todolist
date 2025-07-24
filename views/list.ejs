@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Todolist</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <div class="box">
+      <h1>Todo List</h1>
+    </div>
+  </header>
+  <main>
+    <div class="box">
+      <!-- Priority Filter -->
+      <h2 class="box1">Tasks</h2>
+      <label for="priorityFilter"><h3><i>Filter by Priority:</i></h3></label>
+      <select id="priorityFilter" onchange="filterTasks()">
+        <option value="all">All</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <!-- Task List -->
+      <ul id="taskList">
+        <% tasks.forEach((task, index) => { %>
+          <li class="task" data-priority="<%= task.priority %>">
+            <input type="checkbox" />
+            <strong><%= task.title %></strong> — <em><%= task.priority %></em>
+
+            <!-- Edit and Delete Buttons -->
+            <button type="button" onclick="toggleEditForm(<%= index %>)">⨋</button>
+
+            <form action="/delete/<%= index %>" method="POST" style="display:inline;">
+              <button type="submit">✕</button>
+            </form>
+
+            <!-- Hidden Edit Form -->
+            <form id="editForm-<%= index %>" action="/edit/<%= index %>" method="POST" style="display:none; margin-top: 10px;">
+              <input type="text" name="ele1" value="<%= task.title %>" required />
+              <select name="priority">
+                <option value="High" <%= task.priority === "High" ? "selected" : "" %>>High</option>
+                <option value="Medium" <%= task.priority === "Medium" ? "selected" : "" %>>Medium</option>
+                <option value="Low" <%= task.priority === "Low" ? "selected" : "" %>>Low</option>
+              </select>
+              <button type="submit">✓</button>
+            </form>
+          </li>
+        <% }) %>
+      </ul>
+
+      <!-- Form to Add Task -->
+      <form id="addTaskForm" action="/" method="POST" onsubmit="return validateAndSubmit()">
+        <input type="text" name="ele1" id="taskInput" placeholder="Enter the Task" />
+        <select name="priority" id="priorityInput">
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <button type="submit">+</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- Script to Filter and Toggle Edit Forms -->
+  <script>
+    function filterTasks() {
+      const selectedPriority = document.getElementById('priorityFilter').value;
+      const tasks = document.querySelectorAll('#taskList .task');
+
+      tasks.forEach(task => {
+        const taskPriority = task.getAttribute('data-priority');
+        task.style.display = (selectedPriority === 'all' || taskPriority === selectedPriority) ? '' : 'none';
+      });
+    }
+
+    function toggleEditForm(index) {
+      const form = document.getElementById(`editForm-${index}`);
+      if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function validateAndSubmit() {
+      const taskInput = document.getElementById('taskInput');
+      if (!taskInput.value.trim()) {
+        alert('Please enter a task before adding.');
+        taskInput.focus();
+        return false; // prevent form submission
+      }
+      return true; // allow form submission
+    }
+  </script>
+</body>
+</html>
