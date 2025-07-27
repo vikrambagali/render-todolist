@@ -8,7 +8,7 @@ app.use(express.static("public"));
 
 async function run() {
   try {
-    await mongoose.connect("mongodb://127.0.0.1:27017/todo");
+   await mongoose.connect(process.env.MONGODB_URI);
 
     const taskSchema = new mongoose.Schema({
       name: String,
