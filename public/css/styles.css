@@ -10,6 +10,10 @@ h1{
     border: 2px solid #A683E3;
     text-align: center;
 }
+.order{
+    float: right;
+    
+}
 .box{
     max-width: 500px;
     margin: 50px auto;
