@@ -2,70 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Todolist</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TODO List</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    .edit-form {
+      display: none;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <div class="box">
-      <h1>Todo List</h1>
-    </div>
-  </header>
-  <main>
-    <div class="box">
-      <!-- Priority Filter -->
-      <h2 class="box1">Tasks</h2>
-      <label for="priorityFilter"><h3><i>Filter by Priority:</i></h3></label>
-      <select id="priorityFilter" onchange="filterTasks()">
-        <option value="all">All</option>
+  <div class="box">
+    <h1>TODO LIST</h1>
+  </div>
+
+  <div class="box">
+    <h2 class="box1">Tasks</h2>
+
+    <label for="priorityFilter"><h3><i>Filter by Priority:</i></h3></label>
+    <select id="priorityFilter" onchange="filterTasks()">
+      <option value="all">All</option>
+      <option value="Urgent">Urgent</option>
+      <option value="High">High</option>
+      <option value="Low">Low</option>
+    </select>
+
+    <ul id="taskList">
+      <% tasks.forEach(task => { %>
+        <li class="task" data-priority="<%= task.priority %>">
+          <form action="/delete" method="POST" style="display:inline;">
+            <input type="hidden" name="checkbox1" value="<%= task._id %>"/>
+            <button type="submit" title="Delete task" style="font-size:large;"><ion-icon name="trash-outline"></ion-icon></button>
+          </form>
+
+          <button onclick="toggleEditForm('<%= task._id %>')" title="Edit task" style="font-size:large;"><ion-icon name="create-outline"></ion-icon></button>
+
+          <span id="taskDisplay-<%= task._id %>">
+            <strong><%= task.name %></strong>
+            — <em style="color: grey;">Priority: <%= task.priority %></em>
+          </span>
+
+          <form id="editForm-<%= task._id %>" class="edit-form" action="/edit/<%= task._id %>" method="POST" onsubmit="return validateEditForm('<%= task._id %>')">
+            <input type="text" name="updatedName" id="editName-<%= task._id %>" value="<%= task.name %>" required />
+            <select name="updatedPriority" id="editPriority-<%= task._id %>" required>
+              <option value="Urgent" <%= task.priority === 'High' ? 'selected' : '' %>>Urgent</option>
+              <option value="High" <%= task.priority === 'Medium' ? 'selected' : '' %>>High</option>
+              <option value="Low" <%= task.priority === 'Low' ? 'selected' : '' %>>Low</option>
+            </select>
+            <button type="submit" style="font-size:large;" style="width:10%;"><ion-icon name="bookmark-outline"></ion-icon></button>
+            <button type="button" onclick="toggleEditForm('<%= task._id %>')" style="font-size:large;"><ion-icon name="backspace-outline"></ion-icon></button>
+          </form>
+        </li>
+      <% }) %>
+    </ul>
+
+    <form id="addTaskForm" action="/" method="POST" onsubmit="return validateAndSubmit()">
+      <input type="text" name="ele1" id="taskInput" placeholder="Enter the Task" required />
+      <select name="priority" id="priorityInput" required>
+        <option value="Urgent">Urgent</option>
         <option value="High">High</option>
-        <option value="Medium">Medium</option>
-        <option value="Low">Low</option>
+        <option value="Low" selected>Low</option>
       </select>
+      <button type="submit">+</button>
+    </form>
+  </div>
 
-      <!-- Task List -->
-      <ul id="taskList">
-        <% tasks.forEach((task, index) => { %>
-          <li class="task" data-priority="<%= task.priority %>">
-            <input type="checkbox" />
-            <strong><%= task.title %></strong> — <em><%= task.priority %></em>
-
-            <!-- Edit and Delete Buttons -->
-            <button type="button" onclick="toggleEditForm(<%= index %>)">⨋</button>
-
-            <form action="/delete/<%= index %>" method="POST" style="display:inline;">
-              <button type="submit">✕</button>
-            </form>
-
-            <!-- Hidden Edit Form -->
-            <form id="editForm-<%= index %>" action="/edit/<%= index %>" method="POST" style="display:none; margin-top: 10px;">
-              <input type="text" name="ele1" value="<%= task.title %>" required />
-              <select name="priority">
-                <option value="High" <%= task.priority === "High" ? "selected" : "" %>>High</option>
-                <option value="Medium" <%= task.priority === "Medium" ? "selected" : "" %>>Medium</option>
-                <option value="Low" <%= task.priority === "Low" ? "selected" : "" %>>Low</option>
-              </select>
-              <button type="submit">✓</button>
-            </form>
-          </li>
-        <% }) %>
-      </ul>
-
-      <!-- Form to Add Task -->
-      <form id="addTaskForm" action="/" method="POST" onsubmit="return validateAndSubmit()">
-        <input type="text" name="ele1" id="taskInput" placeholder="Enter the Task" />
-        <select name="priority" id="priorityInput">
-          <option value="High">High</option>
-          <option value="Medium">Medium</option>
-          <option value="Low">Low</option>
-        </select>
-        <button type="submit">+</button>
-      </form>
-    </div>
-  </main>
-
-  <!-- Script to Filter and Toggle Edit Forms -->
   <script>
     function filterTasks() {
       const selectedPriority = document.getElementById('priorityFilter').value;
@@ -77,22 +79,42 @@
       });
     }
 
-    function toggleEditForm(index) {
-      const form = document.getElementById(`editForm-${index}`);
-      if (form) {
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      }
-    }
-
     function validateAndSubmit() {
       const taskInput = document.getElementById('taskInput');
       if (!taskInput.value.trim()) {
         alert('Please enter a task before adding.');
         taskInput.focus();
-        return false; // prevent form submission
+        return false;
       }
-      return true; // allow form submission
+      return true;
+    }
+
+    // Toggle showing/hiding the inline edit form for a task
+    function toggleEditForm(taskId) {
+      const form = document.getElementById(`editForm-${taskId}`);
+      const display = document.getElementById(`taskDisplay-${taskId}`);
+
+      if (form.style.display === "none" || form.style.display === "") {
+        form.style.display = "inline-block";
+        display.style.display = "none";
+      } else {
+        form.style.display = "none";
+        display.style.display = "inline";
+      }
+    }
+
+    // Optional: Validate inline edit form before submitting
+    function validateEditForm(taskId) {
+      const nameInput = document.getElementById(`editName-${taskId}`);
+      if (!nameInput.value.trim()) {
+        alert("Task name cannot be empty!");
+        nameInput.focus();
+        return false;
+      }
+      return true;
     }
   </script>
+  <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </body>
 </html>
