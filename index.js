@@ -64,46 +64,52 @@ async function run() {
       }
     });
 
-    // Delete task
-    app.post("/delete", async (req, res) => {
-      try {
-        const checkedId = req.body.checkbox1;
-        await Task.findByIdAndDelete(checkedId);
-        console.log("Deleted task:", checkedId);
-        res.redirect("/");
-      } catch (err) {
-        console.error(err);
-        res.status(500).send("An error occurred.");
-      }
+    // Delete HTTP task
+    app.delete("/delete/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    await Task.findByIdAndDelete(id);
+    console.log("Deleted task:", id);
+    res.status(200).json({ message: "Task deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred while deleting the task" });
+  }
+});
+
+    // Edit form PUT HTTP Method
+    app.put("/edit/:id", async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    await Task.findByIdAndUpdate(req.params.id, {
+      title,
+      description,
+    });
+    res.status(200).json({ message: "Task updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update task" });
+  }
+});
+
+
+    // Update form PUT HTTP Method
+    app.put("/edit/:id", async (req, res) => {
+  try {
+    const updatedName = req.body.updatedName;
+    const updatedPriority = req.body.updatedPriority || "Low";
+
+    await Task.findByIdAndUpdate(req.params.id, {
+      name: updatedName,
+      priority: updatedPriority,
     });
 
-    // Edit form GET
-    app.get("/edit/:id", async (req, res) => {
-      try {
-        const task = await Task.findById(req.params.id);
-        res.render("edit", { task });
-      } catch (err) {
-        console.error(err);
-        res.status(500).send("Failed to load edit page.");
-      }
-    });
-
-    // Edit form POST
-    app.post("/edit/:id", async (req, res) => {
-      try {
-        const updatedName = req.body.updatedName;
-        const updatedPriority = req.body.updatedPriority || "Low";
-
-        await Task.findByIdAndUpdate(req.params.id, {
-          name: updatedName,
-          priority: updatedPriority
-        });
-        res.redirect("/");
-      } catch (err) {
-        console.error(err);
-        res.status(500).send("Failed to update task.");
-      }
-    });
+    res.status(200).json({ message: "Task updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update task." });
+  }
+});
 
     app.listen(8000, () => {
       console.log("Server started on port 8000");
