@@ -7,7 +7,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 // Replace with your actual MongoDB URI
-const MONGODB_URI = "mongodb://localhost:27017/todoDB"; // For local MongoDB
+const MONGODB_URI = "mongodb+srv://28vikram20:Vikram1234@cluster0.dgblvhy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 // const MONGODB_URI = "mongodb+srv://username:password@cluster.mongodb.net/todoDB"; // For MongoDB Atlas
 
 async function run() {
